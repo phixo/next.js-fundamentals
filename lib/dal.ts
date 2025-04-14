@@ -1,4 +1,5 @@
 import { eq } from 'drizzle-orm';
+import { unstable_cacheTag as cacheTag } from 'next/cache';
 import { cache } from 'react';
 
 import { db } from '@/db';
@@ -17,3 +18,49 @@ export const getUserByEmail = async (email: string) => {
     return null;
   }
 };
+
+export async function getIssues() {
+  'use cache';
+  cacheTag('issues');
+  try {
+    await mockDelay(700);
+    const result = await db.query.issues.findMany({
+      with: {
+        user: true,
+      },
+      orderBy: (issues, { desc }) => [desc(issues.createdAt)],
+    });
+    return result;
+  } catch (error) {
+    console.error('Error fetching issues:', error);
+    throw new Error('Failed to fetch issues');
+  }
+}
+
+// Current user
+export const getCurrentUser = cache(async () => {
+  const session = await getSession();
+  if (!session) return null;
+
+  // Skip database query during prerendering if we don't have a session
+  // hack until we have PPR https://nextjs.org/docs/app/building-your-application/rendering/partial-prerendering
+  if (
+    typeof window === 'undefined' &&
+    process.env.NEXT_PHASE === 'phase-production-build'
+  ) {
+    return null;
+  }
+
+  await mockDelay(700);
+  try {
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, session.userId));
+
+    return result[0] || null;
+  } catch (error) {
+    console.error('Error getting user by ID:', error);
+    return null;
+  }
+});
