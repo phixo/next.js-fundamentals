@@ -1,11 +1,11 @@
-'use server'
+'use server';
 
-import { db } from '@/db'
-import { issues } from '@/db/schema'
-import { eq } from 'drizzle-orm'
-import { getCurrentUser } from '@/lib/dal'
-import { z } from 'zod'
-import { mockDelay } from '@/lib/utils'
+import { eq } from 'drizzle-orm';
+import { z } from 'zod';
+
+import { db } from '@/db';
+import { issues } from '@/db/schema';
+import { mockDelay } from '@/lib/utils';
 
 // Define Zod schema for issue validation
 const IssueSchema = z.object({
@@ -24,13 +24,13 @@ const IssueSchema = z.object({
     errorMap: () => ({ message: 'Please select a valid priority' }),
   }),
   userId: z.string().min(1, 'User ID is required'),
-})
+});
 
-export type IssueData = z.infer<typeof IssueSchema>
+export type IssueData = z.infer<typeof IssueSchema>;
 
 export type ActionResponse = {
-  success: boolean
-  message: string
-  errors?: Record<string, string[]>
-  error?: string
-}
+  success: boolean;
+  message: string;
+  errors?: Record<string, string[]>;
+  error?: string;
+};
