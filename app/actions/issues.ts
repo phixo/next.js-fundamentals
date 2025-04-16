@@ -1,6 +1,7 @@
 'use server';
 
 import { eq } from 'drizzle-orm';
+import { revalidateTag } from 'next/cache';
 import { z } from 'zod';
 
 import { db } from '@/db';
@@ -68,6 +69,7 @@ export async function createIssue(data: IssueData): Promise<ActionResponse> {
       userId: validatedData.userId,
     });
 
+    revalidateTag('issues');
     return { success: true, message: 'Issue created successfully' };
   } catch (error) {
     console.error('Error creating issue:', error);
